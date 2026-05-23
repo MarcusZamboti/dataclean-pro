@@ -42,6 +42,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import {
   ResponsiveContainer,
   PieChart,
@@ -85,6 +87,7 @@ interface CleaningResult {
     columnsSplit: number;
   };
   downloadUrl: string;
+  cleanedData: Record<string, unknown>[];
 }
 
 // ============ LOG TYPE CONFIG ============
@@ -203,6 +206,7 @@ export default function Home() {
           columns: data.columns,
           cleanedRowCount: data.cleanedRowCount,
           cleanedPreview: data.cleanedPreview,
+          cleanedData: data.cleanedData,
           logs: data.logs,
         };
       });
@@ -347,8 +351,60 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    if (result) {
-      window.open(result.downloadUrl, '_blank');
+    if (!result || !result.cleanedData || result.cleanedData.length === 0) {
+      toast({
+        title: 'Erro no download',
+        description: 'Não há dados limpos disponíveis para baixar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const baseName = result.originalFileName.replace(/\.[^.]+$/, '');
+      const cleanedName = `${baseName}_limpo`;
+
+      if (result.originalFormat === 'xlsx') {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(result.cleanedData);
+
+        // Auto-fit column widths for maximum legibility and professional design
+        const cols = Object.keys(result.cleanedData[0]);
+        ws['!cols'] = cols.map(col => {
+          const maxLength = Math.max(
+            col.length,
+            ...result.cleanedData.map((row: any) => String(row[col] ?? '').length)
+          );
+          // Minimum width of 10, maximum of 50 to keep layout organized
+          return { wch: Math.max(10, Math.min(50, maxLength + 3)) };
+        });
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Dados Limpos');
+        XLSX.writeFile(wb, `${cleanedName}.xlsx`);
+      } else {
+        const csv = Papa.unparse(result.cleanedData);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${cleanedName}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      toast({
+        title: 'Download iniciado!',
+        description: 'Seu arquivo limpo foi gerado localmente com sucesso.',
+      });
+    } catch (err) {
+      console.error('Erro ao gerar o arquivo de download local:', err);
+      toast({
+        title: 'Erro ao baixar',
+        description: 'Ocorreu um erro ao estruturar o arquivo de download no seu navegador.',
+        variant: 'destructive',
+      });
     }
   };
 

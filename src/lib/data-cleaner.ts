@@ -53,6 +53,7 @@ export interface CleaningResult {
     columnsSplit: number;
   };
   downloadUrl: string;
+  cleanedData: Record<string, unknown>[];
 }
 
 // ============ HELPER FUNCTIONS ============
@@ -882,6 +883,7 @@ export function processFileData(
       columnsStandardized,
       columnsSplit,
     },
+    cleanedData: data,
     downloadUrl,
   };
 }

@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       'utf-8'
     );
 
-    // Return the response, including preview (first 10 rows)
+    // Return the response, including preview (first 10 rows) and full cleaned data
     return NextResponse.json({
       success: true,
       explanation: aiResult.explanation,
@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
       columns: newColumns,
       cleanedRowCount: transformedData.length,
       cleanedPreview: transformedData.slice(0, 10),
+      cleanedData: transformedData,
       logs: updatedLogs,
     });
   } catch (error) {
