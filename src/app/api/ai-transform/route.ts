@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { readFileContent, CleaningLog } from '@/lib/data-cleaner';
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const processedDir = path.join(process.cwd(), 'processed');
+    const processedDir = path.join(os.tmpdir(), 'dataclean-pro-processed');
     const jsonPath = path.join(processedDir, `${id}.json`);
 
     if (!fs.existsSync(jsonPath)) {

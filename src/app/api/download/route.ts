@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const processedDir = path.join(process.cwd(), 'processed');
+    const processedDir = path.join(os.tmpdir(), 'dataclean-pro-processed');
 
     // Try to find the file (could be csv or xlsx)
     const csvPath = path.join(processedDir, `${id}.csv`);

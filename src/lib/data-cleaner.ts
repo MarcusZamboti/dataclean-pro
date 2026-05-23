@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export interface CleaningLog {
   type: 'error_fix' | 'duplicate_removed' | 'missing_filled' | 'standardization' | 'column_split' | 'info';
@@ -820,7 +821,7 @@ export function processFileData(
 
   // Save processed file
   const downloadUrl = `/api/download?id=${id}`;
-  const processedDir = path.join(process.cwd(), 'processed');
+  const processedDir = path.join(os.tmpdir(), 'dataclean-pro-processed');
   if (!fs.existsSync(processedDir)) {
     fs.mkdirSync(processedDir, { recursive: true });
   }
@@ -912,7 +913,7 @@ export function readFileContent(
 
 export function cleanOldProcessedFiles(): void {
   try {
-    const processedDir = path.join(process.cwd(), 'processed');
+    const processedDir = path.join(os.tmpdir(), 'dataclean-pro-processed');
     if (!fs.existsSync(processedDir)) return;
 
     const files = fs.readdirSync(processedDir);
